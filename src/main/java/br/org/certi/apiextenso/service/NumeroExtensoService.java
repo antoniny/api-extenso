@@ -46,57 +46,62 @@ public class NumeroExtensoService {
         validateNumber(number);
 
         boolean isNumberNegative = (number < 0);
-        boolean isNumberZero = (number == 0);
+        boolean isNumberZero = number.equals(0);
         number = Math.abs(number);
 
         IdentificadorUnidadeDto identificadorUnidadeDto = getIdentificadorUnidade(String.valueOf(number).length());
-
         for (int identified = 0 ; identified < identificadorUnidadeDto.getSeparatorPoints() ; identified++ ){
             String numberStr = String.valueOf(number);
-            int pos_begin = numberStr.length() - ( PLACES_LENGTH *  (identified+1) );
-            int pos_end   = numberStr.length() - ( PLACES_LENGTH *  (identified  ) );
+            int pos_begin = (numberStr.length() < PLACES_LENGTH) ? 0 : numberStr.length() - ( PLACES_LENGTH *  (identified+1) );
+            int pos_end   = (numberStr.length() < PLACES_LENGTH) ? numberStr.length() : numberStr.length() - ( PLACES_LENGTH * identified );
 
             numberStr = numberStr.substring(Math.max(pos_begin, 0), pos_end);
 
-            CentenaDto centenaDto = getNumberHundred( Double .parseDouble(numberStr) );
-            DezenaDto dezenaDto   = getNumberTen(getCalcNumber(Double.parseDouble(numberStr), DIV_TEN));
-            UnidadeDezenaDto unidadeDezenaDto = getNumberUnitTen(getCalcNumber(Double.parseDouble(numberStr), DIV_UNIT_TEN));
-            UnidadeDto unidadeDto = getNumberUnit(getCalcNumber(Double.parseDouble(numberStr), DIV_UNIT));
+            CentenaDto centenaDto = getCentena( Double .parseDouble(numberStr) );
+            DezenaDto dezenaDto   = getDezena(getCalcNumber(Double.parseDouble(numberStr), DIV_TEN));
+            UnidadeDezenaDto unidadeDezenaDto = getUnidadeDezena(getCalcNumber(Double.parseDouble(numberStr), DIV_UNIT_TEN));
+            UnidadeDto unidadeDto = getUnidade(getCalcNumber(Double.parseDouble(numberStr), DIV_UNIT));
 
-            returnNumberWords = getTextExtenso((identified==0)?"":identificadorUnidadeDto.getName(),
+            String strNumberToWords = getNumberToWords((identified==0)?"":identificadorUnidadeDto.getName(),
                                                 centenaDto.getName() ,
                                                 dezenaDto.getName() ,
                                                 unidadeDezenaDto.getName(),
                                                 unidadeDto.getName()
-                                 )
-                    + returnNumberWords;
+            );
+            returnNumberWords = ( (returnNumberWords.isEmpty()) ? strNumberToWords : (strNumberToWords + strAnd) ) + returnNumberWords;
         }
 
 
-        return (isNumberZero)?strZero:((isNumberNegative)?strMenos+" ":"" ) + returnNumberWords.trim();
+        return (isNumberZero)?strZero:((isNumberNegative)?strMenos:"" ) + returnNumberWords.trim();
     }
 
     private Double getCalcNumber(Double number, int div_ref) {
-        return  ( ( ( number / div_ref ) - Math.floor( number / div_ref ) ) * div_ref );
+        double x = ( number / div_ref );
+        double y = Math.floor( number / div_ref ) ;
+        double result = (x - y) * div_ref;
+
+        result = Math.round(result * 100);
+        result = result/100;
+
+        return  result;
     }
 
-
-    private UnidadeDto getNumberUnit(Double number) {
+    private UnidadeDto getUnidade(Double number) {
         Optional<Unidade> optionalUnidade = unidadeRepository.findByParameterBetweenRangeMinAndRangeMax(number);
         return optionalUnidade.map(UnidadeDto::new).orElseGet(UnidadeDto::new);
     }
 
-    private UnidadeDezenaDto getNumberUnitTen(Double number) {
+    private UnidadeDezenaDto getUnidadeDezena(Double number) {
         Optional<UnidadeDezena> optionalUnidadeDezena = unidadeDezenaRepository.findByParameterBetweenRangeMinAndRangeMax(number);
         return optionalUnidadeDezena.map(UnidadeDezenaDto::new).orElseGet(UnidadeDezenaDto::new);
     }
 
-    private DezenaDto getNumberTen(Double number) {
+    private DezenaDto getDezena(Double number) {
         Optional<Dezena> optionalDezena = dezenaRepository.findByParameterBetweenRangeMinAndRangeMax(number);
         return optionalDezena.map(DezenaDto::new).orElseGet(DezenaDto::new);
     }
 
-    private CentenaDto getNumberHundred(Double number) {
+    private CentenaDto getCentena(Double number) {
         Optional<Centena> optionalCentena = centenaRepository.findByParameterBetweenRangeMinAndRangeMax(number);
         return optionalCentena.map(CentenaDto::new).orElseGet(CentenaDto::new);
     }
@@ -110,53 +115,42 @@ public class NumeroExtensoService {
         if ((number == null)||(number < NUMBER_MIN)||(number > NUMBER_MAX)){
             throw new NumberValidationException("Argumento inválido! [-99999/99999] ");
         }
-        strMenos = translateConfig.resolveCode("menos", LocaleContextHolder.getLocale());
+        strMenos = translateConfig.resolveCode("menos", LocaleContextHolder.getLocale()) + " ";
         strZero = translateConfig.resolveCode("zero", LocaleContextHolder.getLocale());
-        strAnd  = " "+translateConfig.resolveCode("e", LocaleContextHolder.getLocale());
+        strAnd  = " " + translateConfig.resolveCode("e", LocaleContextHolder.getLocale())+ " ";
 
     }
 
-    private String getTextExtenso(String nameThousand,String nameHundred, String nameTen, String nameTenUnit, String nameUnit) {
+    private String getNumberToWords(String nameThousand,String nameHundred, String nameTen, String nameTenUnit, String nameUnit) {
         String valueReturn = "";
-        nameThousand    = translateConfig.resolveCode(nameThousand, LocaleContextHolder.getLocale());
-        nameHundred     = translateConfig.resolveCode(nameHundred, LocaleContextHolder.getLocale());
-        nameTen         = translateConfig.resolveCode(nameTen, LocaleContextHolder.getLocale());
-        nameTenUnit     = translateConfig.resolveCode(nameTenUnit, LocaleContextHolder.getLocale());
-        nameUnit        = translateConfig.resolveCode(nameUnit, LocaleContextHolder.getLocale());
+        nameThousand    = (nameThousand == null) ? "" : translateConfig.resolveCode(nameThousand, LocaleContextHolder.getLocale());
+        nameHundred     = (nameHundred  == null) ? "" : translateConfig.resolveCode(nameHundred, LocaleContextHolder.getLocale());
+        nameTen         = (nameTen      == null) ? "" : translateConfig.resolveCode(nameTen, LocaleContextHolder.getLocale());
+        nameTenUnit     = (nameTenUnit  == null) ? "" : translateConfig.resolveCode(nameTenUnit, LocaleContextHolder.getLocale());
+        nameUnit        = (nameUnit     == null) ? "" : translateConfig.resolveCode(nameUnit, LocaleContextHolder.getLocale());
 
-        if (nameTenUnit == null)  {
-            if (nameUnit != null) {
-                valueReturn = " " + nameUnit;
-            }
-        } else {
-            valueReturn = " " + nameTenUnit;
+        if ( nameTenUnit.isEmpty() && !nameUnit.isEmpty() ) {
+            valueReturn = nameUnit;
         }
 
-        if (nameTen != null){
-            if (!nameTen.isEmpty()) {
-                if (!valueReturn.isEmpty()) {
-                    valueReturn = strAnd + valueReturn;
-                }
-                valueReturn = " " + nameTen + valueReturn;
-            }
+        if (!nameTenUnit.isEmpty()) {
+            valueReturn = (valueReturn.isEmpty()) ?  nameTenUnit : nameTenUnit + strAnd + valueReturn;
         }
 
-        if (nameHundred != null) {
-            if (!nameHundred.isEmpty()) {
-                if (!valueReturn.isEmpty()) {
-                    valueReturn = strAnd + valueReturn;
-                }
-                valueReturn = " " + nameHundred + valueReturn;
-            }
+        if (!nameTen.isEmpty()){
+            valueReturn = (valueReturn.isEmpty()) ?  nameTen : nameTen + strAnd + valueReturn;
         }
 
-        if (nameThousand != null) {
-            if (!nameThousand.isEmpty()) {
-                if (valueReturn.isEmpty()) {
-                    valueReturn = strAnd + valueReturn;
-                }
-            }
-            valueReturn = valueReturn + " " + nameThousand;
+        if (!nameHundred.isEmpty()){
+            valueReturn = (valueReturn.isEmpty()) ?  nameHundred : nameHundred + strAnd + valueReturn;
+        }
+
+        if (!nameThousand.isEmpty() && valueReturn.equals("um")) {
+            valueReturn = "";
+        }
+
+        if (!nameThousand.isEmpty()) {
+            valueReturn = (valueReturn.isEmpty()) ?  nameThousand : valueReturn + " " + nameThousand;
         }
 
         return  valueReturn;
