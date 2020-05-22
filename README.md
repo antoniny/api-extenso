@@ -57,9 +57,24 @@ Api:     http://localhost:3000/extenso/v1/
 O comando abaixo deverá realizar o pull(download) da imagem do repositorio DockerHub e na sequência excutar a mesma localmente.
 
 https://hub.docker.com/r/antoniny/api-extenso
+
+Run:
 ```
-docker run --name api-extenso -p 3000:3000 antoniny/api-extenso:latest
+docker run --name api-extenso -t -p 3000:3000 antoniny/api-extenso:latest
+
+Nota: execute sem log no prompot de comando
+docker run --name api-extenso -t -d -p 3000:3000 antoniny/api-extenso:latest
 ```
+Stop:
+```
+docker stop api-extenso
+```
+
+Remove:
+```
+docker rm api-extenso
+```
+
 
 ## Pré-requisito - Instalação Local
 

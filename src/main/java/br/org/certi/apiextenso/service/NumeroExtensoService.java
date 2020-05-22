@@ -22,6 +22,7 @@ public class NumeroExtensoService {
     private final int DIV_UNIT = 10;
     private String strMenos;
     private String strZero;
+    private String strAnd;
 
     @Autowired
     UnidadeRepository unidadeRepository;
@@ -109,20 +110,19 @@ public class NumeroExtensoService {
         if ((number == null)||(number < NUMBER_MIN)||(number > NUMBER_MAX)){
             throw new NumberValidationException("Argumento inválido! [-99999/99999] ");
         }
-        strMenos =  translateConfig.resolveCode("menos", LocaleContextHolder.getLocale());
-        strZero =  translateConfig.resolveCode("zero", LocaleContextHolder.getLocale());
+        strMenos = translateConfig.resolveCode("menos", LocaleContextHolder.getLocale());
+        strZero = translateConfig.resolveCode("zero", LocaleContextHolder.getLocale());
+        strAnd  = " "+translateConfig.resolveCode("e", LocaleContextHolder.getLocale());
 
     }
 
     private String getTextExtenso(String nameThousand,String nameHundred, String nameTen, String nameTenUnit, String nameUnit) {
         String valueReturn = "";
-        String and = "e";
         nameThousand    = translateConfig.resolveCode(nameThousand, LocaleContextHolder.getLocale());
         nameHundred     = translateConfig.resolveCode(nameHundred, LocaleContextHolder.getLocale());
         nameTen         = translateConfig.resolveCode(nameTen, LocaleContextHolder.getLocale());
         nameTenUnit     = translateConfig.resolveCode(nameTenUnit, LocaleContextHolder.getLocale());
         nameUnit        = translateConfig.resolveCode(nameUnit, LocaleContextHolder.getLocale());
-        and             = " "+translateConfig.resolveCode(and, LocaleContextHolder.getLocale());
 
         if (nameTenUnit == null)  {
             if (nameUnit != null) {
@@ -135,7 +135,7 @@ public class NumeroExtensoService {
         if (nameTen != null){
             if (!nameTen.isEmpty()) {
                 if (!valueReturn.isEmpty()) {
-                    valueReturn = and + valueReturn;
+                    valueReturn = strAnd + valueReturn;
                 }
                 valueReturn = " " + nameTen + valueReturn;
             }
@@ -144,7 +144,7 @@ public class NumeroExtensoService {
         if (nameHundred != null) {
             if (!nameHundred.isEmpty()) {
                 if (!valueReturn.isEmpty()) {
-                    valueReturn = and + valueReturn;
+                    valueReturn = strAnd + valueReturn;
                 }
                 valueReturn = " " + nameHundred + valueReturn;
             }
@@ -153,7 +153,7 @@ public class NumeroExtensoService {
         if (nameThousand != null) {
             if (!nameThousand.isEmpty()) {
                 if (valueReturn.isEmpty()) {
-                    valueReturn = and + valueReturn;
+                    valueReturn = strAnd + valueReturn;
                 }
             }
             valueReturn = valueReturn + " " + nameThousand;
