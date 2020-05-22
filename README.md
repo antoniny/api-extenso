@@ -102,7 +102,7 @@ mvn clean package docker:build
 Executar container da aplicação
 
 ```
-docker run -it -p 3000:3030 antoniny/api-extenso:latest
+docker run -it -p 3000:3000 antoniny/api-extenso:latest
 ```
 
 A aplicação estará disponível em http://localhost:3000
