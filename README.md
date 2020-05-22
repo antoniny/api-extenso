@@ -51,7 +51,17 @@ Api:     http://localhost:3000/extenso/v1/
 
 # Setup da aplicação com docker
 
-## Pré-requisito
+
+## Executar servidor via docker - pull DockerHUB 
+
+O comando abaixo deverá realizar o pull(download) da imagem do repositorio DockerHub e na sequência excutar a mesma localmente.
+
+https://hub.docker.com/r/antoniny/api-extenso
+```
+docker run --name api-extenso -p 3000:3000 antoniny/api-extenso:latest
+```
+
+## Pré-requisito - Instalação Local
 
 Antes de rodar a aplicação é preciso garantir que as seguintes dependências estejam corretamente instaladas:
 
@@ -62,16 +72,6 @@ Maven 3.1.0
 ```
 
 ## Preparando ambiente
-
-
-## Executar servidor via docker HUB 
-
-O comando abaixo deverá realizar o pull(download) da imagem do repositorio DockerHub e na sequência excutar a mesma localmente.
-
-https://hub.docker.com/repository/docker/antoniny/
-```
-docker run --name api-extenso -p 3000:3000 antoniny/api-extenso:latest
-```
 
 ## Instalação da aplicação
 
